@@ -931,7 +931,8 @@ def play_space_invaders():
             ui_pen.clear()
             write_text(ui_pen, f"Score: {score}  High: {high_scores['Space Invaders']}  Wave: {wave}", -380, 260, align="left",
                        font=("Courier", 16, "bold"))
-            write_text(ui_pen, f"Lives: {'\u2665' * lives}", 380, 260, align="right",
+            hearts = '\u2665' * lives  # <--- FIXED
+            write_text(ui_pen, f"Lives: {hearts}", 380, 260, align="right",  # <--- FIXED
                        font=("Courier", 16, "bold"))
 
         update_ui()
@@ -1110,7 +1111,6 @@ def play_space_invaders():
 # =====================================================================
 # 5. ATARI BREAKOUT
 # =====================================================================
-
 def play_breakout():
     while True:
         clear_bindings()
@@ -1131,8 +1131,8 @@ def play_breakout():
             ui_pen.clear()
             write_text(ui_pen, f"Score: {score}  Level: {level}  Combo: {combo}  High: {high_scores['Breakout']}", -380, 260,
                        align="left", font=("Courier", 16, "bold"))
-            write_text(ui_pen, f"Lives: {'\u2665' * lives}", 380, 260, align="right",
-                       font=("Courier", 16, "bold"))
+            hearts = '\u2665' * lives  # <--- FIXED
+            write_text(ui_pen, f"Lives: {hearts}", 380, 260, align="right", font=("Courier", 16, "bold"))  # <--- FIXED
 
         update_ui()
 
@@ -1410,11 +1410,11 @@ def play_asteroid_dodger():
             ui_pen.clear()
             write_text(ui_pen, f"Score: {score}  High: {high_scores['Asteroid Dodger']}", -380, 260,
                        align="left", font=("Courier", 16, "bold"))
-            write_text(ui_pen, f"Lives: {'\u2665' * lives}  Shield: {shield_charges}", 380, 260,
-                       align="right", font=("Courier", 16, "bold"))
+            hearts = '\u2665' * lives  # <--- FIXED
+            write_text(ui_pen, f"Lives: {hearts}  Shield: {shield_charges}", 380, 260,
+                       align="right", font=("Courier", 16, "bold"))  # <--- FIXED
 
         update_ui()
-
         keys = {"Left": False, "Right": False, "Up": False, "Down": False,
                 "Escape": False, "Pause": False, "Restart": False}
 
