@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate Web Arcade</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="cabinet">
+    <header class="topbar">
+      <h1>ULTIMATE WEB ARCADE</h1>
+      <div class="profile" id="profile"></div>
+    </header>
+
+    <main class="screen-frame">
+      <section id="menuView" class="panel active">
+        <div class="menu-grid">
+          <article class="game-card" data-game="pong">
+            <h2>Pong Neon</h2>
+            <p>Arcade duel with AI and reactive effects.</p>
+            <button class="start-btn" data-game="pong">Play</button>
+            <button class="info-btn" data-game="pong">Instructions</button>
+          </article>
+          <article class="game-card" data-game="breakout">
+            <h2>Breakout Nova</h2>
+            <p>Combo bricks, particles, and escalating challenge.</p>
+            <button class="start-btn" data-game="breakout">Play</button>
+            <button class="info-btn" data-game="breakout">Instructions</button>
+          </article>
+          <article class="game-card" data-game="snake">
+            <h2>Snake Flux</h2>
+            <p>Fast, polished grid runner with daily seed.</p>
+            <button class="start-btn" data-game="snake">Play</button>
+            <button class="info-btn" data-game="snake">Instructions</button>
+          </article>
+        </div>
+
+        <div class="menu-controls">
+          <label>Difficulty
+            <select id="difficultySelect">
+              <option>Easy</option>
+              <option selected>Normal</option>
+              <option>Hard</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="dailyChallenge" /> Daily challenge</label>
+          <button id="openSettings">Settings</button>
+        </div>
+
+        <div id="scoreBoard" class="score-board"></div>
+        <div id="achievementBoard" class="achievement-board"></div>
+      </section>
+
+      <section id="gameView" class="panel">
+        <div class="hud">
+          <span id="gameTitle">Game</span>
+          <span id="hudScore">Score: 0</span>
+          <span id="hudStatus">Running</span>
+        </div>
+        <canvas id="gameCanvas" width="960" height="540" aria-label="Arcade game canvas"></canvas>
+        <div class="game-actions">
+          <button id="pauseBtn">Pause</button>
+          <button id="restartBtn">Restart</button>
+          <button id="quitBtn">Quit to Menu</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="touchControls" class="touch-controls" aria-hidden="true">
+      <button data-touch="left">◀</button>
+      <button data-touch="right">▶</button>
+      <button data-touch="up">▲</button>
+      <button data-touch="down">▼</button>
+      <button data-touch="action">●</button>
+    </div>
+  </div>
+
+  <dialog id="modal">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <button id="closeModal">Close</button>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -31,6 +31,34 @@ Each game also shows its specific controls on-screen.
 python arcade.py
 ```
 
+### Python Arcade Settings
+
+- In the main menu:
+  - **D** cycles difficulty (**Easy / Normal / Hard**)
+  - **T** cycles turtle speed (**Slow / Normal / Fast**)
+- Settings are persisted in `arcade_settings.json`.
+
+## Web Arcade (GitHub Pages)
+
+A static web arcade is included in `docs/` and works with GitHub Pages.
+
+### Local Preview
+
+Open `docs/index.html` directly in a browser, or use a static server:
+
+```bash
+python -m http.server 8000
+```
+
+Then visit `http://localhost:8000/docs/`.
+
+### GitHub Pages
+
+1. In GitHub repository settings, open **Pages**.
+2. Set source to **Deploy from a branch**.
+3. Select your branch and `/docs` folder.
+4. Save. GitHub will publish the web arcade site automatically.
+
 ## Notes
 
 - All game logic lives in **`arcade.py`** as requested.

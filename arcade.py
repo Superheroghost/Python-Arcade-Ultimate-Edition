@@ -2,6 +2,8 @@ import turtle
 import time
 import random
 import math
+import json
+import os
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -24,13 +26,52 @@ high_scores = {
     "Flappy Turtle": 0
 }
 
+SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "arcade_settings.json")
+DEFAULT_SETTINGS = {"difficulty": "Normal", "turtle_speed": "Normal"}
+DIFFICULTY_LEVELS = ["Easy", "Normal", "Hard"]
+TURTLE_SPEED_LEVELS = ["Slow", "Normal", "Fast"]
+
+
+def load_settings():
+    settings = dict(DEFAULT_SETTINGS)
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as fh:
+            loaded = json.load(fh)
+        if isinstance(loaded, dict):
+            for key, allowed in (("difficulty", DIFFICULTY_LEVELS), ("turtle_speed", TURTLE_SPEED_LEVELS)):
+                value = loaded.get(key)
+                if value in allowed:
+                    settings[key] = value
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        pass
+    return settings
+
+
+def save_settings():
+    try:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as fh:
+            json.dump(settings, fh, indent=2)
+    except OSError:
+        pass
+
+
+def get_difficulty_scalar(easy=0.85, normal=1.0, hard=1.2):
+    return {"Easy": easy, "Normal": normal, "Hard": hard}.get(settings["difficulty"], normal)
+
+
+def get_turtle_speed_scalar():
+    return {"Slow": 0.8, "Normal": 1.0, "Fast": 1.25}.get(settings["turtle_speed"], 1.0)
+
+
+settings = load_settings()
+
 
 def clear_bindings():
     """Removes all keyboard bindings to prevent input overlap between games."""
     keys_to_unbind = [
         "w", "s", "Up", "Down", "Left", "Right", "a", "d",
         "space", "Escape", "1", "2", "3", "4", "5", "6", "7",
-        "r", "p", "c", "m", "Return"
+        "r", "p", "c", "m", "t", "Return"
     ]
     for key in keys_to_unbind:
         wn.onkeypress(None, key)
@@ -117,9 +158,7 @@ def play_pong():
         clear_bindings()
         reset_screen("Pong - Press ESC to Menu")
 
-        speed_input = wn.numinput("Pong", "Enter ball speed (1-10):", default=5, minval=1, maxval=20)
-        if speed_input is None:
-            speed_input = 5
+        speed_input = {"Easy": 4.0, "Normal": 5.0, "Hard": 6.2}[settings["difficulty"]] * get_turtle_speed_scalar()
 
         score_a = 0
         score_b = 0
@@ -181,7 +220,7 @@ def play_pong():
         last_powerup = time.time()
         paddle_boost_end = 0
 
-        paddle_speed = 7
+        paddle_speed = 7 * get_turtle_speed_scalar()
 
         pen = turtle.Turtle()
         pen.speed(0)
@@ -233,6 +272,17 @@ def play_pong():
             ball.dy = clamp(ball.dy, -12, 12)
             paddle.color(flash_color)
             score_flash = 10
+
+        def scoring_delay(duration):
+            delay_end = time.time() + duration
+            while time.time() < delay_end:
+                wn.update()
+                time.sleep(0.01)
+                if keys["Escape"]:
+                    return "escape"
+                if keys["Restart"]:
+                    return "restart"
+            return None
 
         while game_running:
             wn.update()
@@ -343,10 +393,15 @@ def play_pong():
                 trail_drawer.clearstamps()
                 trail_stamps.clear()
 
-                wn.update()
-                time.sleep(1.5)
+                post_score_action = scoring_delay(1.5)
+                if post_score_action == "escape":
+                    break
+                if post_score_action == "restart":
+                    restart = True
+                    break
                 last_speed_up = time.time()
-                keys = {k: False for k in keys}
+                for key_name in keys:
+                    keys[key_name] = False
 
             if ball.dx > 0 and (340 < ball.xcor() < 350) and (paddle_b.ycor() - 55 < ball.ycor() < paddle_b.ycor() + 55):
                 ball.setx(340)
@@ -391,7 +446,10 @@ def play_snake():
         body = []
         direction = "stop"
         score = 0
-        move_delay = 0.1
+        speed_scale = get_turtle_speed_scalar()
+        base_move_delay = {"Easy": 0.13, "Normal": 0.1, "Hard": 0.08}[settings["difficulty"]] / speed_scale
+        min_move_delay = max(0.025, base_move_delay * 0.35)
+        move_delay = base_move_delay
         last_move = time.time()
         wrap_mode = False
         rocks = []
@@ -501,7 +559,7 @@ def play_snake():
                         rocks.clear()
                         score = 0
                         next_rock_score = 50
-                        move_delay = 0.1
+                        move_delay = base_move_delay
                         golden_apple = None
                         update_ui()
 
@@ -512,7 +570,7 @@ def play_snake():
                     rocks.clear()
                     score = 0
                     next_rock_score = 50
-                    move_delay = 0.1
+                    move_delay = base_move_delay
                     golden_apple = None
                     update_ui()
 
@@ -524,7 +582,7 @@ def play_snake():
                     score += 10
                     if score > high_scores["Snake"]:
                         high_scores["Snake"] = score
-                    move_delay = max(0.04, move_delay - 0.002)
+                    move_delay = max(min_move_delay, move_delay - (0.002 * speed_scale))
                     update_ui()
 
                     if score >= next_rock_score:
@@ -608,7 +666,10 @@ def play_tetris():
         pen.speed(0)
 
         score, level, lines_cleared = 0, 1, 0
-        drop_speed = 0.5
+        speed_scale = get_turtle_speed_scalar()
+        base_drop_speed = {"Easy": 0.62, "Normal": 0.5, "Hard": 0.4}[settings["difficulty"]] / speed_scale
+        min_drop_speed = max(0.06, 0.1 / speed_scale)
+        drop_speed = base_drop_speed
 
         ui_pen = build_text_pen("white", 16, False)
         pause_pen = build_text_pen("white", 28, True)
@@ -672,7 +733,7 @@ def play_tetris():
                 score += pts.get(len(cleared), 0) * level
                 lines_cleared += len(cleared)
                 level = (lines_cleared // 10) + 1
-                drop_speed = max(0.1, 0.5 - (level * 0.05))
+                drop_speed = max(min_drop_speed, base_drop_speed - (level * (0.05 / speed_scale)))
                 if score > high_scores["Tetris"]:
                     high_scores["Tetris"] = score
                 update_ui()
@@ -902,6 +963,12 @@ def play_space_invaders():
 
         enemies = []
         wave = 1
+        speed_scale = get_turtle_speed_scalar()
+        difficulty_scale = get_difficulty_scalar(easy=0.85, normal=1.0, hard=1.2)
+        player_speed = 6 * speed_scale
+        bullet_speed = 15 * speed_scale
+        enemy_bullet_chance = 0.0015 * difficulty_scale
+        ufo_spawn_chance = 0.002 * difficulty_scale
 
         def spawn_wave():
             enemies.clear()
@@ -918,7 +985,7 @@ def play_space_invaders():
 
         spawn_wave()
 
-        enemy_speed = 1.4 + (wave * 0.2)
+        enemy_speed = (1.4 + (wave * 0.2)) * difficulty_scale * speed_scale
         score, lives = 0, 3
 
         ui_pen = build_text_pen("white", 18, True)
@@ -977,17 +1044,17 @@ def play_space_invaders():
                 continue
 
             if keys["Left"] and player.xcor() > -380:
-                player.setx(player.xcor() - 6)
+                player.setx(player.xcor() - player_speed)
             if keys["Right"] and player.xcor() < 380:
-                player.setx(player.xcor() + 6)
+                player.setx(player.xcor() + player_speed)
 
             if bullet_state == "fire":
-                bullet.sety(bullet.ycor() + 15)
+                bullet.sety(bullet.ycor() + bullet_speed)
                 if bullet.ycor() > 280:
                     bullet.hideturtle()
                     bullet_state = "ready"
 
-            if not ufo_active and random.random() < 0.002:
+            if not ufo_active and random.random() < ufo_spawn_chance:
                 ufo_active = True
                 ufo.goto(-450, 260)
                 ufo.showturtle()
@@ -1013,7 +1080,7 @@ def play_space_invaders():
                 e.setx(e.xcor() + enemy_speed)
                 if e.xcor() > 370 or e.xcor() < -370:
                     move_down = True
-                if random.random() < 0.0015:
+                if random.random() < enemy_bullet_chance:
                     eb = turtle.Turtle()
                     eb.color("red")
                     eb.shape("square")
@@ -1089,7 +1156,7 @@ def play_space_invaders():
 
             if len(enemies) == 0 and not keys["game_over"]:
                 wave += 1
-                enemy_speed = 1.4 + (wave * 0.2)
+                enemy_speed = (1.4 + (wave * 0.2)) * difficulty_scale * speed_scale
                 spawn_wave()
                 lives = min(5, lives + 1)
                 update_ui()
@@ -1163,7 +1230,10 @@ def play_breakout():
         particle_pen.hideturtle()
         particle_pen.penup()
 
-        ball_speed = 6.0
+        speed_scale = get_turtle_speed_scalar()
+        difficulty_scale = get_difficulty_scalar(easy=0.9, normal=1.0, hard=1.15)
+        paddle_speed = 8 * speed_scale
+        ball_speed = 6.0 * difficulty_scale * speed_scale
         speed_multiplier = 1.0
         ball.dx = 0
         ball.dy = 0
@@ -1243,9 +1313,9 @@ def play_breakout():
                     explosions.remove(exp)
 
             if keys["Left"] and paddle.xcor() > -340:
-                paddle.setx(paddle.xcor() - 8)
+                paddle.setx(paddle.xcor() - paddle_speed)
             if keys["Right"] and paddle.xcor() < 340:
-                paddle.setx(paddle.xcor() + 8)
+                paddle.setx(paddle.xcor() + paddle_speed)
 
             if expand_until and time.time() > expand_until:
                 paddle.shapesize(stretch_wid=0.5, stretch_len=5)
@@ -1257,7 +1327,7 @@ def play_breakout():
                 slow_until = 0
 
             for p in powerups[:]:
-                p["t"].sety(p["t"].ycor() - 4)
+                p["t"].sety(p["t"].ycor() - (4 * speed_scale))
                 if p["t"].ycor() < -290:
                     p["t"].hideturtle()
                     powerups.remove(p)
@@ -1356,7 +1426,7 @@ def play_breakout():
 
                 if active_bricks == 0:
                     level += 1
-                    ball_speed += 0.5
+                    ball_speed += 0.5 * difficulty_scale
                     ball_active = False
                     trail_pen.clearstamps()
                     trail_stamps.clear()
@@ -1399,6 +1469,11 @@ def play_asteroid_dodger():
         shield_charges = 0
         last_spawn = time.time()
         last_power = time.time()
+        speed_scale = get_turtle_speed_scalar()
+        difficulty_scale = get_difficulty_scalar(easy=0.85, normal=1.0, hard=1.2)
+        player_speed = 6 * speed_scale
+        spawn_interval = max(0.35, 0.6 / difficulty_scale / speed_scale)
+        power_spawn_interval = max(5.5, 8 / speed_scale)
 
         ui_pen = build_text_pen("white", 16, True)
         pause_pen = build_text_pen("white", 28, True)
@@ -1454,26 +1529,26 @@ def play_asteroid_dodger():
             status_pen.clear()
             if not game_over:
                 if keys["Left"] and player.xcor() > -370:
-                    player.setx(player.xcor() - 6)
+                    player.setx(player.xcor() - player_speed)
                 if keys["Right"] and player.xcor() < 370:
-                    player.setx(player.xcor() + 6)
+                    player.setx(player.xcor() + player_speed)
                 if keys["Up"] and player.ycor() < 250:
-                    player.sety(player.ycor() + 6)
+                    player.sety(player.ycor() + player_speed)
                 if keys["Down"] and player.ycor() > -260:
-                    player.sety(player.ycor() - 6)
+                    player.sety(player.ycor() - player_speed)
 
-                if time.time() - last_spawn > 0.6:
+                if time.time() - last_spawn > spawn_interval:
                     a = turtle.Turtle()
                     a.shape("circle")
                     a.shapesize(random.uniform(0.6, 1.4))
                     a.color(random.choice(["gray", "light gray", "white"]))
                     a.penup()
                     a.goto(random.randint(-380, 380), 320)
-                    a.speed_val = random.uniform(3.5, 6.5)
+                    a.speed_val = random.uniform(3.5, 6.5) * difficulty_scale * speed_scale
                     asteroids.append(a)
                     last_spawn = time.time()
 
-                if time.time() - last_power > 8 and random.random() < 0.3:
+                if time.time() - last_power > power_spawn_interval and random.random() < 0.3:
                     p = turtle.Turtle()
                     p.shape("triangle")
                     p.shapesize(0.8)
@@ -1509,7 +1584,7 @@ def play_asteroid_dodger():
                             game_over = True
 
                 for p in powerups[:]:
-                    p.sety(p.ycor() - 4)
+                    p.sety(p.ycor() - (4 * speed_scale))
                     if p.ycor() < -320:
                         p.hideturtle()
                         powerups.remove(p)
@@ -1554,11 +1629,15 @@ def play_flappy_turtle():
         pipes = []
         stars, star_pen = make_starfield(50, 0.2, 1.2)
 
+        speed_scale = get_turtle_speed_scalar()
+        difficulty_scale = get_difficulty_scalar(easy=0.85, normal=1.0, hard=1.2)
         velocity = 0
-        gravity = -0.4
-        flap_strength = 8
+        gravity = -0.4 * difficulty_scale * speed_scale
+        flap_strength = 8 * speed_scale
         last_pipe = time.time()
-        pipe_gap = 140
+        pipe_gap = int(140 / difficulty_scale)
+        pipe_speed = 3.5 * difficulty_scale * speed_scale
+        pipe_interval = max(1.4, 2.2 / speed_scale)
 
         score = 0
         game_over = False
@@ -1625,12 +1704,12 @@ def play_flappy_turtle():
                 if player.ycor() > 260 or player.ycor() < -260:
                     game_over = True
 
-                if time.time() - last_pipe > 2.2:
+                if time.time() - last_pipe > pipe_interval:
                     spawn_pipe()
                     last_pipe = time.time()
 
                 for pipe in pipes[:]:
-                    pipe["x"] -= 3.5
+                    pipe["x"] -= pipe_speed
                     pipe["top"].setx(pipe["x"])
                     pipe["bottom"].setx(pipe["x"])
 
@@ -1697,29 +1776,49 @@ def main_menu():
     menu_pen.hideturtle()
 
     options = [
-        ("1. PONG", 80),
-        ("2. SNAKE", 40),
-        ("3. TETRIS", 0),
-        ("4. SPACE INVADERS", -40),
-        ("5. BREAKOUT", -80),
-        ("6. ASTEROID DODGER", -120),
-        ("7. FLAPPY TURTLE", -160)
+        ("1. PONG", 100),
+        ("2. SNAKE", 65),
+        ("3. TETRIS", 30),
+        ("4. SPACE INVADERS", -5),
+        ("5. BREAKOUT", -40),
+        ("6. ASTEROID DODGER", -75),
+        ("7. FLAPPY TURTLE", -110)
     ]
 
-    for text, y in options:
-        menu_pen.goto(0, y)
-        menu_pen.write(text, align="center", font=("Courier", 22, "bold"))
+    def draw_menu_text():
+        menu_pen.clear()
+        menu_pen.color("white")
+        for text, y in options:
+            menu_pen.goto(0, y)
+            menu_pen.write(text, align="center", font=("Courier", 22, "bold"))
 
-    menu_pen.goto(0, -230)
-    menu_pen.color("gray")
-    menu_pen.write("Press 1-7 to Play | P: Pause  R: Restart  ESC: Menu", align="center",
-                   font=("Courier", 14, "normal"))
+        menu_pen.goto(0, -165)
+        menu_pen.color("cyan")
+        menu_pen.write(f"Difficulty [D]: {settings['difficulty']}", align="center", font=("Courier", 16, "bold"))
+        menu_pen.goto(0, -192)
+        menu_pen.color("cyan")
+        menu_pen.write(f"Turtle Speed [T]: {settings['turtle_speed']}", align="center", font=("Courier", 16, "bold"))
+        menu_pen.goto(0, -235)
+        menu_pen.color("gray")
+        menu_pen.write("Press 1-7 to Play | D: Difficulty | T: Turtle Speed", align="center",
+                       font=("Courier", 14, "normal"))
+        menu_pen.goto(0, -255)
+        menu_pen.write("In-game: P Pause | R Restart | ESC Menu", align="center", font=("Courier", 14, "normal"))
+
+    draw_menu_text()
 
     in_menu = {"state": True}
 
     def start_game(func):
         in_menu["state"] = False
         func()
+
+    def cycle_setting(key, allowed):
+        current = settings[key]
+        idx = allowed.index(current)
+        settings[key] = allowed[(idx + 1) % len(allowed)]
+        save_settings()
+        draw_menu_text()
 
     wn.listen()
     wn.onkeypress(lambda: start_game(play_pong), "1")
@@ -1729,6 +1828,8 @@ def main_menu():
     wn.onkeypress(lambda: start_game(play_breakout), "5")
     wn.onkeypress(lambda: start_game(play_asteroid_dodger), "6")
     wn.onkeypress(lambda: start_game(play_flappy_turtle), "7")
+    wn.onkeypress(lambda: cycle_setting("difficulty", DIFFICULTY_LEVELS), "d")
+    wn.onkeypress(lambda: cycle_setting("turtle_speed", TURTLE_SPEED_LEVELS), "t")
 
     color_hue = 0
     while in_menu["state"]:
