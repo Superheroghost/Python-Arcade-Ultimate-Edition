@@ -1,0 +1,6 @@
+
+[dev]
+ruff>=0.6.9
+
+[physics]
+pymunk>=6.8.1
