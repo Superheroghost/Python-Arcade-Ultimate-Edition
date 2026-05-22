@@ -51,7 +51,7 @@ ruff check .
 
 ## Web Arcade (GitHub Pages)
 
-The GitHub Pages arcade lives in `docs/index.html` as a single self-contained file.
+The GitHub Pages arcade is served from `docs/` with `index.html`, `style.css`, and `main.js`.
 
 ## Docs
 

@@ -1,0 +1,226 @@
+:root {
+  --bg: #060913;
+  --bg2: #101d3f;
+  --panel: #0d1630;
+  --line: #2d4b8d;
+  --text: #ebf5ff;
+  --muted: #96add2;
+  --cyan: #43f6ff;
+  --pink: #ff4fd8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1300px 620px at 50% -10%, #203d84 0%, transparent 70%),
+    radial-gradient(900px 500px at 100% 0%, #5a1c76 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 68%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  width: min(1100px, 100%);
+  padding: 1rem;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2.2rem);
+  letter-spacing: .04em;
+}
+
+.subtitle {
+  margin: .4rem 0 0;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.meta-controls {
+  margin-top: .9rem;
+  display: flex;
+  gap: .85rem;
+  flex-wrap: wrap;
+}
+
+.meta-controls label {
+  display: grid;
+  gap: .4rem;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+select,
+button {
+  border: 1px solid #395fa6;
+  border-radius: 10px;
+  background: #162542;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+select {
+  padding: .46rem .66rem;
+}
+
+.ghost-btn,
+.primary-btn,
+.touch-controls button {
+  padding: .52rem .85rem;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+button:hover,
+select:hover {
+  border-color: var(--cyan);
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+.primary-btn {
+  border-color: #6dd8ff;
+  background: linear-gradient(180deg, #1d3f72, #14284a);
+  box-shadow: 0 0 26px #43f6ff2b;
+}
+
+.hud {
+  margin-top: .9rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .6rem;
+}
+
+.chip {
+  background: linear-gradient(180deg, #0f1d3a, #0a1328);
+  border: 1px solid #284477;
+  border-radius: 12px;
+  padding: .46rem .62rem;
+  display: grid;
+  gap: .16rem;
+}
+
+.chip span {
+  font-size: .77rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.chip strong {
+  font-size: 1rem;
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.game-shell {
+  margin-top: .85rem;
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 24px 55px #0008, 0 0 40px #43f6ff24 inset;
+  background: #04070f;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: .85rem;
+  background: linear-gradient(180deg, #02050dcc, #0a1330d6);
+  text-align: center;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+}
+
+.overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.overlay h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.4vw, 2.4rem);
+  text-shadow: 0 0 20px #43f6ff66;
+}
+
+.overlay p {
+  margin: 0;
+  color: #c2d5f2;
+  max-width: 48ch;
+}
+
+.controls {
+  margin-top: .75rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+}
+
+.touch-controls {
+  margin-top: .8rem;
+  display: none;
+  gap: .58rem;
+  justify-content: center;
+}
+
+.touch-controls button {
+  min-width: 80px;
+  min-height: 52px;
+  font-weight: 700;
+}
+
+@media (max-width: 920px) {
+  .hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 800px) {
+  .touch-controls {
+    display: flex;
+  }
+
+  .controls {
+    justify-content: center;
+  }
+
+  .touch-controls button {
+    min-width: 30%;
+  }
+}
