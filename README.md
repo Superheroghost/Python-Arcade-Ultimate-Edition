@@ -1,65 +1,59 @@
 # Python Arcade: Ultimate Edition
 
-A polished, single-file arcade cabinet packed with seven classic-style games built with Python’s built-in `turtle` module. It’s designed for instant play, smooth controls, and arcade-style polish.
+Ultimate Edition now includes a modular `arcade_ue` framework with a plugin game selector, fixed-timestep updates, shared services, optional `pymunk` physics, and a 2.5D demo — while preserving the original `arcade.py` cabinet.
 
-## Games Included
+## What's New in this Upgrade
 
-1. **Pong** – Power-up orbs, curved paddle bounces, speed ramp, and score flashes.
-2. **Snake** – Wrap mode toggle, obstacles, golden apples, and progressive speed.
-3. **Tetris** – Hold piece, ghost piece, soft drop, and dynamic speed scaling.
-4. **Space Invaders** – Shields, waves, UFO bonus, and enemy bullet patterns.
-5. **Breakout** – Combo scoring, paddle/slow power-ups, and multi-level pacing.
-6. **Asteroid Dodger** – Dodge falling asteroids, grab shields, and survive for score.
-7. **Flappy Turtle** – Tap to flap through pipes with a smooth arcade feel.
-
-## Global Controls
-
-- **P**: Pause/Resume
-- **R**: Restart current game
-- **ESC**: Return to menu
-
-Each game also shows its specific controls on-screen.
-
-## Requirements
-
-- Python 3.x
-- `turtle` (ships with the standard library)
+- App framework with scene manager + plugin interface
+- Main menu/game selector (`arcade_ue.app.MenuScene`)
+- Shared services for input/audio/settings/profile/UI drawing
+- Fixed timestep loop with interpolation parameter and hit-stop support
+- Physics abstraction with optional `pymunk` backend fallback
+- Helpers: collision layers/masks, moving platforms, screen shake/hit-stop
+- 2.5D module: parallax + Mode-7 style projection helper
+- New plugin mini-games:
+  1. Breakout Nova (power-ups)
+  2. Twin-Stick Arena
+  3. Physics Mini Pinball
+  4. 2.5D Highway Demo
+  5. Legacy Turtle Cabinet launcher
 
 ## Run
+
+### Ultimate Edition framework (new)
+
+```bash
+python main.py
+# or
+python -m arcade_ue
+```
+
+### Legacy single-file cabinet (original)
 
 ```bash
 python arcade.py
 ```
 
-### Python Arcade Settings
+## Optional physics dependency
 
-- In the main menu:
-  - **D** cycles difficulty (**Easy / Normal / Hard**)
-  - **T** cycles turtle speed (**Slow / Normal / Fast**)
-- Settings are persisted in `arcade_settings.json`.
+```bash
+pip install .[physics]
+```
+
+If `pymunk` is unavailable, the game safely falls back to the built-in lightweight physics layer.
+
+## Dev checks
+
+```bash
+python -m unittest discover -s tests -v
+ruff check .
+```
 
 ## Web Arcade (GitHub Pages)
 
-A static web arcade is included in `docs/` and works with GitHub Pages.
+A static web arcade still exists in `docs/` for browser play.
 
-### Local Preview
+## Docs
 
-Open `docs/index.html` directly in a browser, or use a static server:
-
-```bash
-python -m http.server 8000
-```
-
-Then visit `http://localhost:8000/docs/`.
-
-### GitHub Pages
-
-1. In GitHub repository settings, open **Pages**.
-2. Set source to **Deploy from a branch**.
-3. Select your branch and `/docs` folder.
-4. Save. GitHub will publish the web arcade site automatically.
-
-## Notes
-
-- All game logic lives in **`arcade.py`** as requested.
-- This project is designed for quick play, polished arcade feedback, and easy extension.
+- `CONTRIBUTING.md` – how to add new game plugins
+- `ROADMAP.md` – ~50 planned features grouped by category
