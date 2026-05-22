@@ -43,6 +43,16 @@ h1 {
   text-align: right;
 }
 
+.upgrade-note {
+  margin: 0 0 .8rem;
+  padding: .6rem .8rem;
+  border: 1px solid #39415f;
+  border-radius: 8px;
+  color: #b7c3f9;
+  background: rgba(42, 50, 86, .35);
+  font-size: .9rem;
+}
+
 .screen-frame {
   border: 2px solid color-mix(in oklab, var(--neon), #fff 25%);
   background: linear-gradient(180deg, #141c30, #0b101a);
